@@ -28,7 +28,7 @@ source("Paper_global_parameters.R")
 # UNCOMMENT THE FILES NEEDED (or add other ones from ../FinanceData)
 load("../FinanceData/created_monthly_data/GLOBAL_MONTHLY_DATABASE.Rdata")
 load("../FinanceData/created_yearly_data/GLOBAL_YEARLY_DATABASE.Rdata")
-# load("../FinanceData/created_yearly_data/ALL_COMPUSTAT_DATA.Rdata")
+load("../FinanceData/created_yearly_data/ALL_COMPUSTAT_DATA.Rdata")
 #load("../FinanceData/created_ibes_data/GLOBAL_IBES_DATABASE.Rdata")
 #load("../FinanceData/created_buyback_data/GLOBAL_BUYBACK.Rdata")
 #load("../FinanceData/created_issuers_data/GLOBAL_ISSUERS.Rdata")
@@ -140,5 +140,5 @@ BUYBACK_DATA$RD_score = (BUYBACK_DATA$RnDLastYear_score + BUYBACK_DATA$RnDLast2Y
 
 ##########################################################################################
 # Finally save the main data structure
-save(BUYBACK_DATA, file = "../FinanceData/created_projects_datasets/DemoProject.Rdata")
+save(BUYBACK_DATA, file = "DemoProject.Rdata")
 

@@ -21,7 +21,7 @@ initial_vars = ls(all = TRUE)
 # FILE LOCATIONS
 ##########################################################################################
 
-project_data_location = "../FinanceData/created_projects_datasets/DemoProject.Rdata"
+project_data_location = "DemoProject.Rdata"
 load(project_data_location)
 # All the data filters are done in here - in case we want to change them for the paper
 ISSUERS_DATA = BUYBACK_DATA # Just because filter_data_for_paper.R also uses it (should remove it from that file)
