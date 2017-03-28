@@ -1,0 +1,16 @@
+\makeatletter 
+\long\def\@makecaption#1#2{% 
+\vskip\abovecaptionskip 
+\sbox\@tempboxa{#1. #2}% 
+\ifdim \wd\@tempboxa >\hsize 
+#1. #2\par 
+\else 
+\global \@minipagefalse 
+\hb@xt@\hsize{\box\@tempboxa\hfil}% 
+\fi 
+\vskip\belowcaptionskip} 
+\renewcommand{\figurename}{{\bf Figure}}
+\renewcommand{\fnum@figure}[1]{{\normalfont\bf\figurename~\thefigure.}}
+\renewcommand{\tablename}{{\bf Table}}
+\renewcommand{\fnum@table}[1]{{\normalfont\bf\tablename~\thetable.}}
+\makeatother

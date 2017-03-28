@@ -1,0 +1,221 @@
+
+<< eval = TRUE, echo=FALSE,message=FALSE,fig.pos='h',results='asis' >>=
+#dev.off();
+# RUN THE NEXT LINE TO GET THE PDF
+#library(knitr); knit2pdf('manuscript.Rnw', texi2dvi='texi2dvi'); file.remove(paste("manuscript",c(".aux",".tex",".blg",".bbl",".log",".out"),sep=""))
+#dir.create("tmpfiles") # need to comment this if the directory already exists
+# Then to make it into Word: 
+# system("pandoc -s manuscript.tex --bibliography=bibliography.bib --number-sections --reference-links -o wordfilename.docx")
+
+rm(list=ls()) # Clean up the memory, if we want to rerun from scratch
+
+generate_all_data = 0 # set this to 1 if the data need to be re-generated from scratch
+generate_rnw_data = 0 # set this to 1 to generate the .Rnw data
+
+if (generate_all_data == 1){
+  source("create_project_data.R")
+}
+if (generate_rnw_data == 1){
+  source("process_data_for_paper.R")
+} else {
+  load("data_for_paper.Rdata")
+}
+
+source("helpers/lib_helpers.R", chdir=TRUE)
+source("helpers/latex_code.R")
+source("helpers/ff_industries_sic.R")
+source("Paper_global_parameters.R")
+
+firstyear = as.character(format(FirstTrade,"%Y"))
+lastyear = as.character(format(Last,"%Y"))
+
+inline_hook <- function (x) {
+  if (is.numeric(x)) {
+    # ifelse does a vectorized comparison
+    # If integer, print without decimal; otherwise print two places
+    res <- ifelse(x == round(x),
+                  # use comma for 1000s
+                  sprintf("%s", prettyNum(x, big.mark=",")),
+                  sprintf("%.2f", x)
+    )
+    paste(res, collapse = ", ")
+  } else {
+    x
+  }
+}
+knit_hooks$set(inline = inline_hook)
+@
+
+
+\documentclass[12pt]{article}
+
+% DEFAULT PACKAGE SETUP
+\usepackage{setspace,graphicx,epstopdf,amsmath,amsfonts,amssymb,amsthm,versionPO,tabularx,ltxtable}
+\usepackage{marginnote,datetime,enumitem,subfigure,rotating,fancyvrb,graphics,siunitx}
+\usepackage{capt-of,pdflscape}
+\usepackage{hyperref,float}
+\usepackage[longnamesfirst]{natbib}
+\usepackage{booktabs}% http://ctan.org/pkg/booktabs
+
+\usdate
+
+% Make subsubsections inline with a period after the title
+\usepackage{titlesec}
+\newcommand{\periodafter}[1]{#1.}
+\titleformat{\subsubsection}[runin]
+{\normalfont\bfseries}{\thesubsubsection}{1em}{\periodafter}
+
+% These next lines allow including or excluding different versions of text
+% using versionPO.sty
+
+\excludeversion{notes}		% Include notes?
+\includeversion{links}          % Turn hyperlinks on?
+
+% Turn off hyperlinking if links is excluded
+\iflinks{}{\hypersetup{draft=true}}
+
+% Notes options
+\ifnotes{%
+\usepackage[margin=1in,paperwidth=10in,right=2.5in]{geometry}%
+\usepackage[textwidth=1.4in,shadow,colorinlistoftodos]{todonotes}%
+}{%
+\usepackage[margin=1in]{geometry}%
+\usepackage[disable]{todonotes}%
+}
+
+% Allow todonotes inside footnotes without blowing up LaTeX
+% Next command works but now notes can overlap. Instead, we'll define 
+% a special footnote note command that performs this redefinition.
+%\renewcommand{\marginpar}{\marginnote}%
+
+% Save original definition of \marginpar
+\let\oldmarginpar\marginpar
+
+% Workaround for todonotes problem with natbib (To Do list title comes out wrong)
+\makeatletter\let\chapter\@undefined\makeatother % Undefine \chapter for todonotes
+
+% Define note commands
+\newcommand{\smalltodo}[2][] {\todo[caption={#2}, size=\scriptsize, fancyline, #1] {\begin{spacing}{.5}#2\end{spacing}}}
+\newcommand{\rhs}[2][]{\smalltodo[color=green!30,#1]{{\bf RS:} #2}}
+\newcommand{\rhsnolist}[2][]{\smalltodo[nolist,color=green!30,#1]{{\bf RS:} #2}}
+\newcommand{\rhsfn}[2][]{%  To be used in footnotes (and in floats)
+\renewcommand{\marginpar}{\marginnote}%
+\smalltodo[color=green!30,#1]{{\bf RS:} #2}%
+\renewcommand{\marginpar}{\oldmarginpar}}
+%\newcommand{\textnote}[1]{\ifnotes{{\noindent\color{red}#1}}{}}
+\newcommand{\textnote}[1]{\ifnotes{{\colorbox{yellow}{{\color{red}#1}}}}{}}
+
+\renewcommand{\thetable}{\Roman{table}}
+\renewcommand{\thefigure}{\Roman{figure}}
+
+% Command to start a new page, starting on odd-numbered page if twoside option 
+% is selected above
+\newcommand{\clearRHS}{\clearpage\thispagestyle{empty}\cleardoublepage\thispagestyle{plain}}
+
+% Number paragraphs and subparagraphs and include them in TOC
+\setcounter{tocdepth}{2}
+
+% RFS-specific includes:
+
+\usepackage{endnotes}    % Use endnotes instead of footnotes
+\usepackage{rfs}          % RFS-specific formatting of sections, etc.
+\newcommand{\citeRFS}[1]{\citeauthor{#1}~\citeyear{#1}} % Not very elegant...
+
+% Define theorem-like commands and a few random function names.
+\newtheorem{condition}{Condition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{obs}{Observation}
+\newcommand{\argmax}{\mathop{\rm arg\,max}}
+\newcommand{\sign}{\mathop{\rm sign}}
+\newcommand{\defeq}{\stackrel{\rm def}{=}}
+
+\begin{document}
+
+\setlist{noitemsep}  % Reduce space between list items (itemize, enumerate, etc.)
+\doublespacing
+%\onehalfspacing      % Use 1.5 spacing
+
+\thispagestyle{empty}
+
+\newcommand{\tit}{The Title}
+
+\newcommand{\abs}{The Abstract - with a reference \cite{PeyerVermaelen2009} ...
+}
+
+\doublespacing
+
+\centerline{\Large \bf \tit}
+
+\vspace*{0.5in}
+
+\centerline{\bf Abstract}
+\medskip
+\abs
+
+\clearpage
+
+
+\section{Introduction}
+\label{sec:Introduction}
+
+The Introduction
+
+\newpage
+\appendix
+
+Example Table
+
+
+<<   eval = TRUE, echo=FALSE,message=FALSE,fig.pos='h',results='asis' >>=
+printLatexTable2(
+  cbind(IRATS_table_highRnD_BB,IRATS_table_lowRnD_BB)[reported_times,],
+  cbind(CAL_table_highRnD_BB,CAL_table_lowRnD_BB)[reported_times,],
+  columns = c("High RnD 4F","High RnD 5F","Low RnD 4F","Low RnD 5F"),
+  title="Buybacks and RnD",
+  title1 = "Panel A: IRATs Cumulative Abnormal Returns",
+  title2 = "Panel B: Calendar Time Method Monthly Abnormal Returns",
+  caption="The table presents the abnormal returns for firms after open market repurchase announcements from the announcement date until $t$ months after announcement. .... The significance levels are indicated by +, *, and ** and correspond to a significance level of $10\\%$, $5\\%$, and $1\\%$ respectively, using a two-tailed test.
+",
+label = "tbl:RnDresults",
+bigtitleontop=T,
+titleontop=T,
+metric1 = "CAR",
+metric2 = "AR",
+scale=1,
+lastSpecial=T,
+dorotate=T
+)
+
+@
+
+
+
+<<   eval = TRUE, echo=FALSE,message=FALSE,fig.pos='h',results='asis' >>=
+printLatexTable2(
+  cbind(IRATS_table_highRnD_Overvalued_BB,IRATS_table_lowRnD_Overvalued_BB)[reported_times,],
+  cbind(CAL_table_highRnD_Overvalued_BB,CAL_table_lowRnD_Overvalued_BB)[reported_times,],
+  columns = c("High RnD 4F","High RnD 5F","Low RnD 4F","Low RnD 5F"),
+  title="Buyback and RnD: Low U-index (Overvalued) firms",
+  title1 = "Panel A: IRATs Cumulative Abnormal Returns",
+  title2 = "Panel B: Calendar Time Method Monthly Abnormal Returns",
+  caption="The table presents the abnormal returns for firms after open market repurchase announcements from the announcement date until $t$ months after announcement. .... The significance levels are indicated by +, *, and ** and correspond to a significance level of $10\\%$, $5\\%$, and $1\\%$ respectively, using a two-tailed test.
+",
+label = "tbl:RnDoverresults",
+bigtitleontop=T,
+titleontop=T,
+metric1 = "CAR",
+metric2 = "AR",
+scale=1,
+lastSpecial=T,
+dorotate=T
+)
+
+@
+
+
+
+\bibliographystyle{jf}
+\bibliography{Bibliography}
+
+\end{document}
